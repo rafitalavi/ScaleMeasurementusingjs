@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Measure Distance</title>
+  <style>
+    canvas { border: 1px solid black; display: block; margin-top: 10px; cursor: crosshair; }
+  </style>
+</head>
+<body>
+  <h2>Upload Image</h2>
+  <form method="POST" enctype="multipart/form-data">
+    <input type="file" name="image" required>
+    <button type="submit">Upload</button>
+  </form>
+
+  {% if filename %}
+    <h3>Click two points to measure</h3>
+    <button onclick="zoom(1.2)">Zoom In</button>
+    <button onclick="zoom(0.8)">Zoom Out</button>
+    <p id="distance"></p>
+    <canvas id="canvas"></canvas>
+    <h3>Click two points to measure</h3>
+    <button onclick="zoom(1.2)">Zoom In</button>
+    <button onclick="zoom(0.8)">Zoom Out</button>
+    <button onclick="resetPoints()">Reset Points</button>
+    <p id="distance"></p>
+    <!-- <script>
+      function resetPoints() {
+  points = [];
+  document.getElementById("distance").innerText = "";
+  draw();
+}
+  
+      const img = new Image();
+      img.src = "{{ url_for('static', filename='uploads/' + filename) }}";
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+
+      let scale = 1.0;
+      let offsetX = 0, offsetY = 0;
+      let isDragging = false;
+      let startX, startY;
+      let points = [];
+      const pixelsPerCm = 50; // adjust based on your reference
+
+      img.onload = () => {
+        canvas.width = window.innerWidth - 100;
+        canvas.height = window.innerHeight - 100;
+        draw();
+      };
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.translate(offsetX, offsetY);
+        ctx.scale(scale, scale);
+        ctx.drawImage(img, 0, 0);
+
+        if (points.length >= 1) drawCircle(points[0]);
+        if (points.length === 2) {
+          drawCircle(points[1]);
+          drawLine(points[0], points[1]);
+        }
+
+        ctx.restore();
+      }
+
+      function drawCircle([x, y]) {
+        ctx.beginPath();
+        ctx.arc(x, y, 5 / scale, 0, 2 * Math.PI);
+        ctx.fillStyle = 'red';
+        ctx.fill();
+      }
+
+      function drawLine([x1, y1], [x2, y2]) {
+  // Draw the line
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.strokeStyle = 'blue';
+  ctx.lineWidth = 2 / scale;
+  ctx.stroke();
+
+  // Calculate distance
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  const cm = dist / pixelsPerCm;
+
+  // Draw the distance text
+  const midX = (x1 + x2) / 2;
+  const midY = (y1 + y2) / 2;
+  ctx.fillStyle = 'black';
+  ctx.font = `${14 / scale}px Arial`;
+  ctx.fillText(`${cm.toFixed(2)} cm`, midX + 5, midY - 5);
+}
+
+      function zoom(factor) {
+        scale *= factor;
+        draw();
+      }
+
+      canvas.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startX = e.clientX - offsetX;
+        startY = e.clientY - offsetY;
+      });
+
+      canvas.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+          offsetX = e.clientX - startX;
+          offsetY = e.clientY - startY;
+          draw();
+        }
+      });
+
+      canvas.addEventListener('mouseup', () => isDragging = false);
+      canvas.addEventListener('mouseleave', () => isDragging = false);
+
+      canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left - offsetX) / scale;
+        const y = (e.clientY - rect.top - offsetY) / scale;
+
+        points.push([x, y]);
+
+        if (points.length === 2) {
+          const dx = points[0][0] - points[1][0];
+          const dy = points[0][1] - points[1][1];
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const cm = dist / pixelsPerCm;
+          document.getElementById("distance").innerText = `Distance: ${cm.toFixed(2)} cm`;
+        }
+
+        if (points.length > 2) {
+          points = [[x, y]];
+          document.getElementById("distance").innerText = "";
+        }
+
+        draw();
+      });
+    </script> -->
+    <script>
+        const img = new Image();
+        img.src = "{{ url_for('static', filename='uploads/' + filename) }}";
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+      
+        let scale = 1.0;
+        let offsetX = 0, offsetY = 0;
+        let isDragging = false;
+        let startX, startY;
+        let points = [];
+        const pixelsPerCm = 50; // adjust based on your reference
+      
+        img.onload = () => {
+          canvas.width = window.innerWidth - 100;
+          canvas.height = window.innerHeight - 100;
+          draw();
+        };
+      
+        function draw() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.save();
+          ctx.translate(offsetX, offsetY);
+          ctx.scale(scale, scale);
+          ctx.drawImage(img, 0, 0);
+      
+          // Draw all points and lines
+          for (let i = 0; i < points.length; i++) {
+            drawCircle(points[i]);
+            if (i > 0) {
+              drawLine(points[i - 1], points[i]);
+            }
+          }
+      
+          ctx.restore();
+        }
+      
+        function drawCircle([x, y]) {
+          ctx.beginPath();
+          ctx.arc(x, y, 5 / scale, 0, 2 * Math.PI);
+          ctx.fillStyle = 'red';
+          ctx.fill();
+        }
+      
+        function drawLine([x1, y1], [x2, y2]) {
+          // Draw the line
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.strokeStyle = 'blue';
+          ctx.lineWidth = 2 / scale;
+          ctx.stroke();
+      
+          // Calculate distance
+          const dx = x2 - x1;
+          const dy = y2 - y1;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const cm = dist / pixelsPerCm;
+      
+          // Draw the distance text
+          const midX = (x1 + x2) / 2;
+          const midY = (y1 + y2) / 2;
+          ctx.fillStyle = 'blue';
+          ctx.font = `${18 / scale}px Arial`;
+          ctx.fillText(`${cm.toFixed(0)} cm`, midX + 5, midY - 5);
+        }
+      
+        function zoom(factor) {
+          scale *= factor;
+          draw();
+        }
+      
+        canvas.addEventListener('mousedown', (e) => {
+          isDragging = true;
+          startX = e.clientX - offsetX;
+          startY = e.clientY - offsetY;
+        });
+      
+        canvas.addEventListener('mousemove', (e) => {
+          if (isDragging) {
+            offsetX = e.clientX - startX;
+            offsetY = e.clientY - startY;
+            draw();
+          }
+        });
+      
+        canvas.addEventListener('mouseup', () => isDragging = false);
+        canvas.addEventListener('mouseleave', () => isDragging = false);
+      
+        canvas.addEventListener('click', (e) => {
+          const rect = canvas.getBoundingClientRect();
+          const x = (e.clientX - rect.left - offsetX) / scale;
+          const y = (e.clientY - rect.top - offsetY) / scale;
+      
+          // Add point
+          points.push([x, y]);
+      
+          // Display distance for all lines
+          draw();
+        });
+      
+        function resetPoints() {
+          points = [];
+          document.getElementById("distance").innerText = "";
+          draw();
+        }
+      </script>
+      
+  {% endif %}
+</body>
+</html>
